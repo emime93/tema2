@@ -35,8 +35,8 @@ char caracter;
 %type <sir>str
 %nonassoc '=='
 %nonassoc '|'	 
-%left '#'
 %left '+' '-'
+%left '#'
 %left '*'
 %left '`'
 %left '?' 
@@ -53,18 +53,9 @@ str   : '|' str '|' {
 			$$ = str;
 			printf("|%s|: %s\n",$2,$$);
 		}
-	  | '(' '|' str '|' ')' {
-			char str[2];
-			sprintf(str,"%d",strlen($3));
-			$$ = str;
-			printf("|%s|: %s\n",$3,$$);
-		}
-	  |	 '(' str '+' str ')'  { 
-         char* s=malloc(sizeof(char)*(strlen($2)+2));
-         strcpy(s,$2); strcat(s,$4);
-         $$=s;
-         printf("%s + %s : %s\n",$2,$4,$$);
-        }  
+	  | '(' str ')' {
+	  	$$ = $2;
+	  }
       |  str '+' str  { 
          char* s=malloc(sizeof(char)*(strlen($1)+2));
          strcpy(s,$1); strcat(s,$3);
@@ -125,18 +116,6 @@ str   : '|' str '|' {
           $$ = s1;
           printf("%s * %s : %s\n",$1,$3,$$);
         } 
-      | str '*' '(' str ')' {
-          char* s = malloc(sizeof(char));
-          char* s1 = malloc(sizeof(char));
-          strcpy(s1,"");
-          strcpy(s,$1);
-          int nr = atoi($4);
-          int i;
-          for (i = 1; i <= nr; ++i)
-            strcat(s1,s);
-          $$ = s1;
-          printf("%s * %s : %s\n",$1,$4,$$);
-        } 
       | str '?' str {
           char *pos = $1; int found = 0;
               while((pos = strstr(pos, $3))){
@@ -147,20 +126,6 @@ str   : '|' str '|' {
         if(found == 0) printf("Nu s-a gasit nicio aparitie a lui %s in %s\n", $3,$1);
         
         printf("Numar de aparitii ale lui %s: %s\n",$3,$$);
-        }
-      | '(' str '?' str ')' {
-          char *pos = $2; int found = 0;
-              while((pos = strstr(pos, $4))){
-                        pos += strlen($4);
-                        found++;
-              }
-        char aux[3];
-        sprintf(aux,"%d",found);
-        $$ = aux;
-
-        if(found == 0) printf("Nu s-a gasit nicio aparitie a lui %s in %s\n", $4,$2);  
-        printf("Numar de aparitii ale lui %s: %s\n",$4,$$);
-        
         }
       | str '#' NR {
       		if (strlen($1) < $3) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
@@ -189,15 +154,6 @@ str   : '|' str '|' {
       		printf("Primele %d caractere ale lui %s: %s\n",$1,$3,$$);
       		}
       	}
-      | NR '`' '(' str ')' {
-      		if (strlen($4) < $1) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
-      		else {
-      		char*s = malloc(sizeof(char));
-      		strncpy(s,$4,$1);
-      		$$ = s;
-      		printf("Primele %d caractere ale lui %s: %s\n",$1,$4,$$);
-      		}
-      }
       | str '`' str {
       		int len = atoi($1);
       		if (strlen($3) < len) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
@@ -207,39 +163,6 @@ str   : '|' str '|' {
       		strncpy(s,$3,n);
       		$$ = s;
       		printf("Primele %d caractere ale lui %s: %s\n",n,$3,$$);
-      		}
-      	}
-      | str '`' '(' str ')' {
-      		int len = atoi($1);
-      		if (strlen($4) < len) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
-      		else {
-      		char*s = malloc(sizeof(char));
-      		int n = atoi($1);
-      		strncpy(s,$4,n);
-      		$$ = s;
-      		printf("Primele %d caractere ale lui %s: %s\n",n,$4,$$);
-      		}
-      	}
-      | '(' str ')' '`' str {
-      		int len = atoi($2);
-      		if (strlen($5) < len) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
-      		else {
-      		char*s = malloc(sizeof(char));
-      		int n = atoi($2);
-      		strncpy(s,$5,n);
-      		$$ = s;
-      		printf("Primele %d caractere ale lui %s: %s\n",n,$5,$$);
-      		}
-      	}
-      | '(' str ')' '`' '(' str ')' {
-      		int len = atoi($2);
-      		if (strlen($6) < len) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
-      		else {
-      		char*s = malloc(sizeof(char));
-      		int n = atoi($2);
-      		strncpy(s,$6,n);
-      		$$ = s;
-      		printf("Primele %d caractere ale lui %s: %s\n",n,$6,$$);
       		}
       	}
       | str EQUAL str {
