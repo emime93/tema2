@@ -36,10 +36,10 @@ char caracter;
 %nonassoc '=='
 %nonassoc '|'	 
 %left '#'
-%left '`'
-%left '?'
 %left '+' '-'
-%left '*' 
+%left '*'
+%left '`'
+%left '?' 
 
 
 %start s
@@ -52,6 +52,12 @@ str   : '|' str '|' {
 			sprintf(str,"%d",strlen($2));
 			$$ = str;
 			printf("|%s|: %s\n",$2,$$);
+		}
+	  | '(' '|' str '|' ')' {
+			char str[2];
+			sprintf(str,"%d",strlen($3));
+			$$ = str;
+			printf("|%s|: %s\n",$3,$$);
 		}
 	  |	 '(' str '+' str ')'  { 
          char* s=malloc(sizeof(char)*(strlen($2)+2));
@@ -68,6 +74,12 @@ str   : '|' str '|' {
       | SIR {
         char* s = malloc(sizeof(char));
         strcpy(s,$1);
+        $$=s;
+        printf("Sirul recunoscut:%s\n",$$);
+        }
+      | '(' SIR ')' {
+        char* s = malloc(sizeof(char));
+        strcpy(s,$2);
         $$=s;
         printf("Sirul recunoscut:%s\n",$$);
         }
@@ -101,6 +113,30 @@ str   : '|' str '|' {
           $$ = s1;
           printf("%s * %d : %s\n",$1,$3,$$);
         }
+      | str '*' str {
+          char* s = malloc(sizeof(char));
+          char* s1 = malloc(sizeof(char));
+          strcpy(s1,"");
+          strcpy(s,$1);
+          int nr = atoi($3);
+          int i;
+          for (i = 1; i <= nr; ++i)
+            strcat(s1,s);
+          $$ = s1;
+          printf("%s * %s : %s\n",$1,$3,$$);
+        } 
+      | str '*' '(' str ')' {
+          char* s = malloc(sizeof(char));
+          char* s1 = malloc(sizeof(char));
+          strcpy(s1,"");
+          strcpy(s,$1);
+          int nr = atoi($4);
+          int i;
+          for (i = 1; i <= nr; ++i)
+            strcat(s1,s);
+          $$ = s1;
+          printf("%s * %s : %s\n",$1,$4,$$);
+        } 
       | str '?' str {
           char *pos = $1; int found = 0;
               while((pos = strstr(pos, $3))){
@@ -112,6 +148,20 @@ str   : '|' str '|' {
         
         printf("Numar de aparitii ale lui %s: %s\n",$3,$$);
         }
+      | '(' str '?' str ')' {
+          char *pos = $2; int found = 0;
+              while((pos = strstr(pos, $4))){
+                        pos += strlen($4);
+                        found++;
+              }
+        char aux[3];
+        sprintf(aux,"%d",found);
+        $$ = aux;
+
+        if(found == 0) printf("Nu s-a gasit nicio aparitie a lui %s in %s\n", $4,$2);  
+        printf("Numar de aparitii ale lui %s: %s\n",$4,$$);
+        
+        }
       | str '#' NR {
       		if (strlen($1) < $3) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
       		else {
@@ -119,6 +169,15 @@ str   : '|' str '|' {
       		strncpy(s,$1+strlen($1)-$3,$3);
       		$$ = s;
       		printf("Ultimele %d caractere ale lui %s: %s\n",$3,$1,$$);
+      		}
+      	}
+      | str '#' str {
+      		if (strlen($1) < atoi($3)) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
+      		else {
+      		char*s = malloc(sizeof(char));
+      		strncpy(s,$1+strlen($1)-atoi($3),atoi($3));
+      		$$ = s;
+      		printf("Ultimele %s caractere ale lui %s: %s\n",$3,$1,$$);
       		}
       	}
       | NR '`' str {
@@ -148,6 +207,39 @@ str   : '|' str '|' {
       		strncpy(s,$3,n);
       		$$ = s;
       		printf("Primele %d caractere ale lui %s: %s\n",n,$3,$$);
+      		}
+      	}
+      | str '`' '(' str ')' {
+      		int len = atoi($1);
+      		if (strlen($4) < len) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
+      		else {
+      		char*s = malloc(sizeof(char));
+      		int n = atoi($1);
+      		strncpy(s,$4,n);
+      		$$ = s;
+      		printf("Primele %d caractere ale lui %s: %s\n",n,$4,$$);
+      		}
+      	}
+      | '(' str ')' '`' str {
+      		int len = atoi($2);
+      		if (strlen($5) < len) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
+      		else {
+      		char*s = malloc(sizeof(char));
+      		int n = atoi($2);
+      		strncpy(s,$5,n);
+      		$$ = s;
+      		printf("Primele %d caractere ale lui %s: %s\n",n,$5,$$);
+      		}
+      	}
+      | '(' str ')' '`' '(' str ')' {
+      		int len = atoi($2);
+      		if (strlen($6) < len) printf("lungimea sirului este mai mica decat numarul de caractere introdus\n");
+      		else {
+      		char*s = malloc(sizeof(char));
+      		int n = atoi($2);
+      		strncpy(s,$6,n);
+      		$$ = s;
+      		printf("Primele %d caractere ale lui %s: %s\n",n,$6,$$);
       		}
       	}
       | str EQUAL str {
